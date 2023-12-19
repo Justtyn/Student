@@ -2,11 +2,9 @@
   <div>
     <!--    查询栏-->
     <div class="card" style="margin-bottom: 10px">
-      <el-input style="width: 200px; margin-right: 10px" v-model="data.name" placeholder="请输入课程名称以查询"
+      <el-input style="width: 200px; margin-right: 10px" v-model="data.username" placeholder="请输入账号以查询"
                 :prefix-icon="Search"/>
-      <el-input style="width: 200px; margin-right: 10px" v-model="data.no" placeholder="请输入课程编号以查询"
-                :prefix-icon="Search"/>
-      <el-input style="width: 200px; margin-right: 10px" v-model="data.teacher" placeholder="请输入任课老师以查询"
+      <el-input style="width: 200px; margin-right: 10px" v-model="data.name" placeholder="请输入学生名称以查询"
                 :prefix-icon="Search"/>
       <el-button type="primary" plain="true" style="margin-left: 10px" @click="load">查 询</el-button>
       <el-button type="info" plain="true" @click="reload">重 置</el-button>
@@ -21,11 +19,17 @@
       <div>
         <el-table :data="data.tableData" style="width: 100%" v-loading="loading(data.loading)">
           <el-table-column prop="id" label="课程ID" width="80"/>
-          <el-table-column prop="name" label="课程名称"/>
-          <el-table-column prop="no" label="课程编号"/>
-          <el-table-column prop="descr" label="课程描述"/>
-          <el-table-column prop="times" label="课时"/>
-          <el-table-column prop="teacher" label="任课老师"/>
+          <el-table-column prop="username" label="学生账号"/>
+          <el-table-column prop="name" label="学生姓名"/>
+          <el-table-column prop="phone" label="手机号"/>
+          <el-table-column prop="email" label="学生邮箱"/>
+          <el-table-column prop="sex" label="性别"/>
+          <el-table-column prop="birth" label="生日"/>
+          <el-table-column prop="avatar" label="头像">
+            <template #default="scope">
+              <el-image v-if="scope.row.avatar" :src="scope.row.avatar" :preview-src-list="[scope.row.avatar]" style="width: 40px; height: 40px; border-radius: 5px"></el-image>
+            </template>
+          </el-table-column>
           <el-table-column label="操作">
             <template #default="scope">
               <el-button type="primary" size="small" plain="true" @click="handleEdit(scope.row)">编 辑</el-button>
@@ -43,22 +47,37 @@
                      background layout="prev, pager, next" :total="data.total"/>
     </div>
 
-    <el-dialog width="30%" v-model="data.formVisible" title="课程信息">
-      <el-form :model="data.form" label-width="100px" label-position="right" style="padding-right: 40px">
-        <el-form-item label="课程名称:">
+    <el-dialog width="30%" v-model="data.formVisible" title="学生信息" destory-on-close>
+      <el-form :model="data.form" :rules="rules" ref="formRef" label-width="100px" label-position="right"
+               style="padding-right: 40px">
+        <el-form-item label="学生账号:" prop="username">
+          <el-input v-model="data.form.username" autocomplete="off"/>
+        </el-form-item>
+        <el-form-item label="学生密码:" prop="password">
+          <el-input show-password v-model="data.form.password" autocomplete="off"/>
+        </el-form-item>
+        <el-form-item label="学生姓名:">
           <el-input v-model="data.form.name" autocomplete="off"/>
         </el-form-item>
-        <el-form-item label="课程编号:">
-          <el-input v-model="data.form.no" autocomplete="off"/>
+        <el-form-item label="手机号:">
+          <el-input v-model="data.form.phone" autocomplete="off"/>
         </el-form-item>
-        <el-form-item label="课程描述:">
-          <el-input v-model="data.form.descr" autocomplete="off"/>
+        <el-form-item label="邮箱:">
+          <el-input v-model="data.form.email" autocomplete="off"/>
         </el-form-item>
-        <el-form-item label="课程课时:">
-          <el-input v-model="data.form.times" autocomplete="off"/>
+        <el-form-item label="性别:">
+          <el-radio-group v-model="data.form.sex">
+            <el-radio label="男"></el-radio>
+            <el-radio label="女"></el-radio>
+          </el-radio-group>
         </el-form-item>
-        <el-form-item label="任课老师:">
-          <el-input v-model="data.form.teacher" autocomplete="off"/>
+        <el-form-item style="width: 100%" label="生日:">
+          <el-date-picker format="YYYY-MM-DD" value-format="YYYY-MM-DD" v-model="data.form.birth"></el-date-picker>
+        </el-form-item>
+        <el-form-item label="头像:">
+          <el-upload action="http://localhost:9090/api/files/upload" list-type="picture" :on-success="handleImgUploadSuccess">
+            <el-button type="primary">上传头像</el-button>
+          </el-upload>
         </el-form-item>
       </el-form>
       <template #footer>
@@ -84,11 +103,12 @@ const loading = (loading) => {
   ref(loading)
 }
 
+const baseUrl = '/api/student'
+
 const data = reactive({
-  no: '',
-  teacher: '',
-  // 搜索栏数据
   name: '',
+  // 搜索栏数据
+  username: '',
   // 表单数据
   tableData: [],
   // 总页数
@@ -104,13 +124,12 @@ const data = reactive({
 
 const load = () => {
   data.loading = true
-  request.get('/api/course/selectPage', {
+  request.get(baseUrl + '/selectPage', {
     params: {
       pageNum: data.pageNum,
       pageSize: data.pageSize,
+      username: data.username,
       name: data.name,
-      no: data.no,
-      teacher: data.teacher,
     }
   }).then(res => {
     data.loading = false
@@ -128,11 +147,21 @@ const handleCurrentChange = (pageNum) => {
 }
 
 const reload = () => {
+  data.username = ''
   data.name = ''
-  data.no = ''
-  data.teacher = ''
   load()
 }
+
+const rules = reactive({
+  username: [
+    {required: true, message: '请输入账号', trigger: 'blur'},
+  ],
+  password: [
+    {required: true, message: '请输入密码', trigger: 'blur'},
+  ],
+})
+
+const formRef = ref()
 
 // 打开新增框方法
 const handleAdd = () => {
@@ -143,19 +172,23 @@ const handleAdd = () => {
 
 // 修改与新增数据方法
 const save = () => {
-  loading(true)
-  request.request({
-    url: data.form.id ? '/api/course/update' : '/api/course/add',
-    method: data.form.id ? 'PUT' : 'POST',
-    data: data.form
-  }).then(res => {
-    loading(false)
-    if (res.code === '200') {
-      load()  // 重新获取数据
-      data.formVisible = false  // 关闭弹窗
-      ElMessage.success("操作成功")
-    } else {
-      ElMessage.error(res.msg)
+  formRef.value.validate((valid) => {
+    if (valid) {
+      loading(true)
+      request.request({
+        url: data.form.id ? baseUrl + '/update' : baseUrl + '/add',
+        method: data.form.id ? 'PUT' : 'POST',
+        data: data.form
+      }).then(res => {
+        loading(false)
+        if (res.code === '200') {
+          load()  // 重新获取数据
+          data.formVisible = false  // 关闭弹窗
+          ElMessage.success("操作成功")
+        } else {
+          ElMessage.error(res.msg)
+        }
+      })
     }
   })
 }
@@ -169,7 +202,7 @@ const handleEdit = (row) => {
 // 删除数据方法
 const del = (id) => {
   ElMessageBox.confirm('删除后无法恢复数据，确认要删除嘛？', '确认删除', {type: 'warning'}).then(res => {
-    request.delete('/api/course/delete/' + id).then(res => {
+    request.delete(baseUrl + '/delete/' + id).then(res => {
       if (res.code === '200') {
         load()  // 重新获取数据
         ElMessage.success("操作成功")
@@ -183,5 +216,10 @@ const del = (id) => {
       message: '删除已取消'
     })
   })
+
+}
+
+const handleImgUploadSuccess = (res) => {
+  data.form.avatar = res.data
 }
 </script>

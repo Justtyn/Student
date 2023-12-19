@@ -1,9 +1,14 @@
 <template>
   <div>
+    <div style="padding-left: 20px; display: flex; align-items: center ;position: absolute;width: 100%">
+      <img src="@/assets/imgs/logo.png" alt="" style="width: 40px">
+      <div style="font-weight: bold; font-size: 24px; margin-left: 5px">学生成绩管理系统</div>
+      <div style=" font-size: 15px; margin-bottom: -10px; margin-left: 10px">By Justyn</div>
+    </div>
     <!-- 垂直水平居中、浮动布局 -->
     <div class="login-container">
       <div style="width: 400px" class="login-box">
-        <div style="font-weight: bold;font-size: 24px;text-align: center;margin-bottom: 30px">登 陆</div>
+        <div style="font-weight: bold;font-size: 24px;text-align: center;margin-bottom: 30px">注 册</div>
         <el-form :model="data.form" ref="formRef" :rules="rules">
           <!-- 账号表单 -->
           <el-form-item prop="username">
@@ -13,20 +18,13 @@
           <el-form-item prop="password">
             <el-input show-password prefix-icon="Lock" v-model="data.form.password" placeholder="请输入密码"></el-input>
           </el-form-item>
-          <!-- 角色选择框-->
-          <el-form-item prop="role">
-            <el-select style="width: 100%" v-model="data.form.role">
-              <el-option value="ADMIN" label="管理员"></el-option>
-              <el-option value="STUDENT" label="学生"></el-option>
-            </el-select>
-          </el-form-item>
-          <!-- 登陆按钮-->
+          <!-- 注册按钮-->
           <el-form-item>
-            <el-button type="primary" style="width: 100%" @click="login">登 陆</el-button>
+            <el-button type="primary" style="width: 100%" @click="register">注 册</el-button>
           </el-form-item>
         </el-form>
         <div style="margin-top: 30px;text-align: right;font-size: 15px">
-          还没有账号？请<a href="/register">注册</a>
+          已有账号？请<a href="/login">登陆</a>
         </div>
       </div>
 
@@ -42,7 +40,7 @@ import {ElMessage} from "element-plus";
 import router from "@/router";
 
 const data = reactive({
-  form: {role: 'ADMIN'}
+  form: {}
 })
 
 const rules = reactive({
@@ -57,16 +55,16 @@ const rules = reactive({
 
 const formRef = ref()
 
-const login = () => {
+const register = () => {
   formRef.value.validate((valid) => {
     if (valid) {
-      request.post('/login', data.form).then(res => {
+      request.post('/register', data.form).then(res => {
         if (res.code === '200') {
           localStorage.setItem('student-user', JSON.stringify(res.data))
-          ElMessage.success('登陆成功')
+          ElMessage.success('注册成功')
           console.log(res.data)
-          // 跳转到主页
-          router.push('/home')
+          // 跳转到登陆页
+          router.push('/login')
         } else {
           ElMessage.error(res.msg)
         }
@@ -78,12 +76,13 @@ const login = () => {
 
 <style scoped>
 .login-container {
+  position: relative;
   min-height: 100vh;
   overflow: hidden;
   display: flex;
   align-items: center;
   justify-content: center;
-  background-image: url("@/assets/imgs/bg2.jpg");
+  background-image: url("@/assets/imgs/bg5.jpg");
   background-size: cover;
 }
 

@@ -5,7 +5,6 @@ import org.apache.ibatis.annotations.Select;
 
 public interface AdminMapper {
 
-
     /**
      * 登陆
      */

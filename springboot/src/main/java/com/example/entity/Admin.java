@@ -1,6 +1,6 @@
 package com.example.entity;
 
-public class Admin {
+public class Admin extends Account {
     // ID
     private Integer id;
     // 名称

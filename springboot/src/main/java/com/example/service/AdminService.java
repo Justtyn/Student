@@ -1,5 +1,6 @@
 package com.example.service;
 
+import com.example.entity.Account;
 import com.example.entity.Admin;
 import com.example.exception.CustomException;
 import com.example.mapper.AdminMapper;
@@ -17,14 +18,14 @@ public class AdminService {
     /**
      * 登陆
      */
-    public Admin login(Admin admin) {
-        Admin dbAdmin = adminMapper.selectByUsername(admin.getUsername());
+    public Account login(Account account) {
+        Account dbAdmin = adminMapper.selectByUsername(account.getUsername());
         if (dbAdmin == null) {
             // 数据库没有用户
             throw new CustomException("账号或密码错误");
         }
         // 比较密码
-        if (!admin.getPassword().equals(dbAdmin.getPassword())) {
+        if (!account.getPassword().equals(dbAdmin.getPassword())) {
             throw new CustomException("账号或密码错误");
         }
         // 登陆成功
